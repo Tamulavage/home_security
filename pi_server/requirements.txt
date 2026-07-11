@@ -1,0 +1,6 @@
+Flask==2.3.5
+requests==2.31.0
+adafruit-circuitpython-dht
+RPi.GPIO==0.7.1
+picamera2
+PyJWT==2.8.0
