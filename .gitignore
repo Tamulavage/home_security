@@ -17,10 +17,11 @@
 /android_app/.idea/tasks.xml
 /android_app/.idea/caches/
 /android_app/.idea/libraries/
+/android_app/.idea/
 /android_app/*.iml
 
 # Local configuration
-local.properties
+/android_app/local.properties
 
 # Other
 *.log
@@ -32,6 +33,8 @@ local.properties
 # ==============================================================================
 __pycache__/
 */__pycache__/
+/*/__pycache__/
+/*/*/__pycache__/
 *.py[cod]
 *$py.class
 *.so
