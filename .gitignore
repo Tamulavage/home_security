@@ -1,0 +1,116 @@
+# Built application files
+/android_app/*.apk
+/android_app/*.ap_
+/android_app/*.aab
+/android_app/*.dex
+
+# Gradle/Build and generated files
+/android_app/.gradle/
+/android_app/build/
+/android_app//*/build/
+/android_app/bin/
+/android_app/gen/
+/android_app/out/
+
+# Android Studio/IntelliJ files
+/android_app/.idea/workspace.xml
+/android_app/.idea/tasks.xml
+/android_app/.idea/caches/
+/android_app/.idea/libraries/
+/android_app/*.iml
+
+# Local configuration
+local.properties
+
+# Other
+*.log
+/android_app/.DS_Store
+.DS_Store
+
+# ==============================================================================
+# Python Core & Byte-compiled files
+# ==============================================================================
+__pycache__/
+*/__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+# ==============================================================================
+# Virtual Environments (Isolate local dependencies)
+# ==============================================================================
+.venv/
+venv/
+/*/venv/
+ENV/
+env/
+/*/ENV/
+/*/env/
+# Poetry environment directory
+.vev
+# pipenv environment directory
+.pew/
+
+# ==============================================================================
+# Environment Variables & Secrets (NEVER commit these)
+# ==============================================================================
+.env
+.envrc
+*.secret
+secrets.json
+/*/secrets.json
+
+# ==============================================================================
+# Testing, Coverage, & Code Quality
+# ==============================================================================
+.cache/
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.tox/
+.coverage
+.coverage.*
+htmlcov/
+nosetests.xml
+coverage.xml
+*.cover
+
+# ==============================================================================
+# Distribution / Packaging (Build artifacts)
+# ==============================================================================
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# ==============================================================================
+# IDEs and Text Editors
+# ==============================================================================
+# VS Code
+.vscode/
+/*/.vscode/
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+
+# PyCharm / IntelliJ
+.idea/
+*.iws
+
+# System Files
+.DS_Store
+Thumbs.db
