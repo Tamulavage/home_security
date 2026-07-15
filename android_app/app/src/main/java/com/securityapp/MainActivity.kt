@@ -1,4 +1,4 @@
-package com.example.securityapp
+package com.securityapp
 
 import android.content.Context
 import android.graphics.BitmapFactory
@@ -14,12 +14,14 @@ import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 import androidx.lifecycle.lifecycleScope
+import com.example.securityapp.R
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.textfield.TextInputEditText
 import com.google.android.material.textfield.TextInputLayout
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import okhttp3.*
+import okio.ByteString
 import java.io.IOException
 import java.util.concurrent.TimeUnit
 
@@ -188,8 +190,8 @@ class MainActivity : AppCompatActivity() {
                 val source = response.body?.source() ?: return
 
                 // JPEG Magic bytes: Start of Image (SOI) and End of Image (EOI)
-                val soi = okio.ByteString.of(0xFF.toByte(), 0xD8.toByte())
-                val eoi = okio.ByteString.of(0xFF.toByte(), 0xD9.toByte())
+                val soi = ByteString.of(0xFF.toByte(), 0xD8.toByte())
+                val eoi = ByteString.of(0xFF.toByte(), 0xD9.toByte())
 
                 try {
                     while (!source.exhausted()) {
