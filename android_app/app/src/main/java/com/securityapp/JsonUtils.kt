@@ -1,4 +1,4 @@
-package com.example.securityapp
+package com.securityapp
 
 import org.json.JSONObject
 

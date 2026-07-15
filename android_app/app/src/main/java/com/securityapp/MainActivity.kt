@@ -1,9 +1,10 @@
-package com.example.securityapp
+package com.securityapp
 
 import android.content.Context
 import android.graphics.BitmapFactory
 import android.os.Bundle
 import android.util.Log
+import android.view.View
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
@@ -13,11 +14,14 @@ import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 import androidx.lifecycle.lifecycleScope
+import com.example.securityapp.R
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.textfield.TextInputEditText
+import com.google.android.material.textfield.TextInputLayout
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import okhttp3.*
+import okio.ByteString
 import java.io.IOException
 import java.util.concurrent.TimeUnit
 
@@ -26,9 +30,12 @@ private val PI_HOST = stringPreferencesKey("pi_host")
 private val API_KEY = stringPreferencesKey("api_key")
 
 class MainActivity : AppCompatActivity() {
+    private lateinit var inputLayoutPiHost: TextInputLayout
+    private lateinit var inputLayoutApiKey: TextInputLayout
     private lateinit var editPiHost: TextInputEditText
     private lateinit var editApiKey: TextInputEditText
     private lateinit var buttonConnect: MaterialButton
+    private lateinit var buttonToggleCamera: MaterialButton
     private lateinit var textTemperature: TextView
     private lateinit var textMotion: TextView
     private lateinit var imageVideo: ImageView
@@ -39,14 +46,18 @@ class MainActivity : AppCompatActivity() {
 
     private var apiKey: String = ""
     private var piHost: String = ""
+    private var isCameraOn: Boolean = true
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
+        inputLayoutPiHost = findViewById(R.id.inputLayoutPiHost)
+        inputLayoutApiKey = findViewById(R.id.inputLayoutApiKey)
         editPiHost = findViewById(R.id.editPiHost)
         editApiKey = findViewById(R.id.editApiKey)
         buttonConnect = findViewById(R.id.buttonConnect)
+        buttonToggleCamera = findViewById(R.id.buttonToggleCamera)
         textTemperature = findViewById(R.id.textTemperature)
         textMotion = findViewById(R.id.textMotion)
         imageVideo = findViewById(R.id.imageVideo)
@@ -72,7 +83,45 @@ class MainActivity : AppCompatActivity() {
                 fetchTemperature()
                 fetchMotion()
                 startVideoStream()
+                buttonToggleCamera.visibility = View.VISIBLE
+                inputLayoutPiHost.visibility = View.GONE
+                inputLayoutApiKey.visibility = View.GONE
+                buttonConnect.visibility = View.GONE
             }
+        }
+
+        buttonToggleCamera.setOnClickListener {
+            toggleCamera()
+        }
+    }
+
+    private fun toggleCamera() {
+        val action = if (isCameraOn) "stop" else "start"
+        val url = "http://$piHost:5000/camera/$action"
+
+        val request = Request.Builder()
+            .url(url)
+            .post(RequestBody.create(null, ByteArray(0)))
+            .addHeader("X-API-KEY", apiKey)
+            .build()
+
+        client.newCall(request).enqueue(object : Callback {
+            override fun onFailure(call: Call, e: IOException) {
+                Log.e("MainActivity", "Camera $action request failed", e)
+            }
+
+            override fun onResponse(call: Call, response: Response) {
+                if (response.isSuccessful) {
+                    isCameraOn = !isCameraOn
+                    runOnUiThread {
+                        buttonToggleCamera.text = if (isCameraOn) "Turn Camera OFF" else "Turn Camera ON"
+                    }
+                }
+                response.close()
+            }
+        })
+        if(!isCameraOn) {
+            startVideoStream()
         }
     }
 
@@ -141,8 +190,8 @@ class MainActivity : AppCompatActivity() {
                 val source = response.body?.source() ?: return
 
                 // JPEG Magic bytes: Start of Image (SOI) and End of Image (EOI)
-                val soi = okio.ByteString.of(0xFF.toByte(), 0xD8.toByte())
-                val eoi = okio.ByteString.of(0xFF.toByte(), 0xD9.toByte())
+                val soi = ByteString.of(0xFF.toByte(), 0xD8.toByte())
+                val eoi = ByteString.of(0xFF.toByte(), 0xD9.toByte())
 
                 try {
                     while (!source.exhausted()) {
