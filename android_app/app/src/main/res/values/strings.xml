@@ -1,4 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">SecurityApp</string>
+    <string name="temperature_format">Temperature: %1$s°F  Humidity: %2$s%%</string>
+    <string name="motion_format">Motion: %1$s</string>
+    <string name="camera_on">Turn Camera OFF</string>
+    <string name="camera_off">Turn Camera ON</string>
+    <string name="disconnect">Disconnect</string>
 </resources>
