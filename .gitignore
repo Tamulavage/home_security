@@ -9,7 +9,8 @@
 /android_app/build/
 /android_app/app/build/
 /android_app/app/build/*
-android_app/app/build/*
+/android_app/app/build/outputs/logs/
+/android_app/app/build
 /android_app/bin/
 /android_app/gen/
 /android_app/out/
