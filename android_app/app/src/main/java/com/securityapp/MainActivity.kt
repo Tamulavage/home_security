@@ -7,6 +7,7 @@ import android.util.Log
 import android.view.View
 import android.widget.ImageView
 import android.widget.TextView
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
@@ -21,6 +22,7 @@ import com.google.android.material.textfield.TextInputLayout
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import okhttp3.*
+import okhttp3.RequestBody.Companion.toRequestBody
 import okio.ByteString
 import java.io.IOException
 import java.util.concurrent.TimeUnit
@@ -35,6 +37,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var editPiHost: TextInputEditText
     private lateinit var editApiKey: TextInputEditText
     private lateinit var buttonConnect: MaterialButton
+    private lateinit var buttonDisconnect: MaterialButton
     private lateinit var buttonToggleCamera: MaterialButton
     private lateinit var textTemperature: TextView
     private lateinit var textMotion: TextView
@@ -47,6 +50,7 @@ class MainActivity : AppCompatActivity() {
     private var apiKey: String = ""
     private var piHost: String = ""
     private var isCameraOn: Boolean = true
+    private var isStreaming: Boolean = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -57,6 +61,7 @@ class MainActivity : AppCompatActivity() {
         editPiHost = findViewById(R.id.editPiHost)
         editApiKey = findViewById(R.id.editApiKey)
         buttonConnect = findViewById(R.id.buttonConnect)
+        buttonDisconnect = findViewById(R.id.buttonDisconnect)
         buttonToggleCamera = findViewById(R.id.buttonToggleCamera)
         textTemperature = findViewById(R.id.textTemperature)
         textMotion = findViewById(R.id.textMotion)
@@ -83,15 +88,29 @@ class MainActivity : AppCompatActivity() {
                 fetchTemperature()
                 fetchMotion()
                 startVideoStream()
-                buttonToggleCamera.visibility = View.VISIBLE
-                inputLayoutPiHost.visibility = View.GONE
-                inputLayoutApiKey.visibility = View.GONE
-                buttonConnect.visibility = View.GONE
             }
+        }
+
+        buttonDisconnect.setOnClickListener {
+            disconnect()
         }
 
         buttonToggleCamera.setOnClickListener {
             toggleCamera()
+        }
+    }
+
+    private fun disconnect() {
+        isStreaming = false
+        runOnUiThread {
+            inputLayoutPiHost.visibility = View.VISIBLE
+            inputLayoutApiKey.visibility = View.VISIBLE
+            buttonConnect.visibility = View.VISIBLE
+            buttonDisconnect.visibility = View.GONE
+            buttonToggleCamera.visibility = View.GONE
+            imageVideo.setImageBitmap(null)
+            textTemperature.text = getString(R.string.temperature_format, "--", "--")
+            textMotion.text = getString(R.string.motion_format, "unknown")
         }
     }
 
@@ -101,7 +120,7 @@ class MainActivity : AppCompatActivity() {
 
         val request = Request.Builder()
             .url(url)
-            .post(RequestBody.create(null, ByteArray(0)))
+            .post(ByteArray(0).toRequestBody(null))
             .addHeader("X-API-KEY", apiKey)
             .build()
 
@@ -114,7 +133,7 @@ class MainActivity : AppCompatActivity() {
                 if (response.isSuccessful) {
                     isCameraOn = !isCameraOn
                     runOnUiThread {
-                        buttonToggleCamera.text = if (isCameraOn) "Turn Camera OFF" else "Turn Camera ON"
+                        buttonToggleCamera.text = if (isCameraOn) getString(R.string.camera_on) else getString(R.string.camera_off)
                     }
                 }
                 response.close()
@@ -135,14 +154,29 @@ class MainActivity : AppCompatActivity() {
         client.newCall(request).enqueue(object : Callback {
             override fun onFailure(call: Call, e: IOException) {
                 Log.e("MainActivity", "Temperature request failed", e)
+                runOnUiThread {
+                    Toast.makeText(this@MainActivity, "Connection failed: ${e.message}", Toast.LENGTH_SHORT).show()
+                }
             }
 
             override fun onResponse(call: Call, response: Response) {
-                response.body?.string()?.let { body ->
-                    val temperature = JsonUtils.getValueFromJson(body, "temperature_f")
-                    val humidity = JsonUtils.getValueFromJson(body, "humidity")
+                if (response.isSuccessful) {
+                    response.body?.string()?.let { body ->
+                        val temperature = JsonUtils.getValueFromJson(body, "temperature_f")
+                        val humidity = JsonUtils.getValueFromJson(body, "humidity")
+                        runOnUiThread {
+                            textTemperature.text = getString(R.string.temperature_format, temperature, humidity)
+                            // Hide connection UI on success
+                            inputLayoutPiHost.visibility = View.GONE
+                            inputLayoutApiKey.visibility = View.GONE
+                            buttonConnect.visibility = View.GONE
+                            buttonDisconnect.visibility = View.VISIBLE
+                            buttonToggleCamera.visibility = View.VISIBLE
+                        }
+                    }
+                } else {
                     runOnUiThread {
-                        textTemperature.text = "Temperature: $temperature°F  Humidity: $humidity%"
+                        Toast.makeText(this@MainActivity, "Connection failed: ${response.code}", Toast.LENGTH_SHORT).show()
                     }
                 }
                 response.close()
@@ -163,10 +197,12 @@ class MainActivity : AppCompatActivity() {
             }
 
             override fun onResponse(call: Call, response: Response) {
-                response.body?.string()?.let { body ->
-                    val motionDetect = JsonUtils.getValueFromJson(body, "motion_detected")
-                    runOnUiThread {
-                        textMotion.text = "Motion: $motionDetect"
+                if (response.isSuccessful) {
+                    response.body?.string()?.let { body ->
+                        val motionDetect = JsonUtils.getValueFromJson(body, "motion_detected")
+                        runOnUiThread {
+                            textMotion.text = getString(R.string.motion_format, motionDetect)
+                        }
                     }
                 }
                 response.close()
@@ -175,6 +211,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun startVideoStream() {
+        isStreaming = true
         val url = "http://$piHost:5000/video_feed"
         val request = Request.Builder()
             .url(url)
@@ -187,6 +224,10 @@ class MainActivity : AppCompatActivity() {
             }
 
             override fun onResponse(call: Call, response: Response) {
+                if (!response.isSuccessful) {
+                    response.close()
+                    return
+                }
                 val source = response.body?.source() ?: return
 
                 // JPEG Magic bytes: Start of Image (SOI) and End of Image (EOI)
@@ -194,7 +235,7 @@ class MainActivity : AppCompatActivity() {
                 val eoi = ByteString.of(0xFF.toByte(), 0xD9.toByte())
 
                 try {
-                    while (!source.exhausted()) {
+                    while (isStreaming && !source.exhausted()) {
                         // 1. Skip any text headers (Content-Type, Content-Length) and find the JPEG start
                         val soiIndex = source.indexOf(soi)
                         if (soiIndex == -1L) break // Stream ended or no more frames
