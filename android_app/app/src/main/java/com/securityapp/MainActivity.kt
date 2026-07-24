@@ -87,7 +87,7 @@ class MainActivity : AppCompatActivity() {
                 }
                 fetchTemperature()
                 fetchMotion()
-                startVideoStream()
+                fetchStatus()
             }
         }
 
@@ -135,13 +135,15 @@ class MainActivity : AppCompatActivity() {
                     runOnUiThread {
                         buttonToggleCamera.text = if (isCameraOn) getString(R.string.camera_on) else getString(R.string.camera_off)
                     }
+                    if (isCameraOn) {
+                        startVideoStream()
+                    } else {
+                        isStreaming = false
+                    }
                 }
                 response.close()
             }
         })
-        if(!isCameraOn) {
-            startVideoStream()
-        }
     }
 
     private fun fetchTemperature() {
@@ -210,7 +212,38 @@ class MainActivity : AppCompatActivity() {
         })
     }
 
+    private fun fetchStatus() {
+        val url = "http://$piHost:5000/status"
+        val request = Request.Builder()
+            .url(url)
+            .addHeader("X-API-KEY", apiKey)
+            .build()
+
+        client.newCall(request).enqueue(object : Callback {
+            override fun onFailure(call: Call, e: IOException) {
+                Log.e("MainActivity", "Status request failed", e)
+            }
+
+            override fun onResponse(call: Call, response: Response) {
+                if (response.isSuccessful) {
+                    response.body?.string()?.let { body ->
+                        val cameraEnabledStr = JsonUtils.getValueFromJson(body, "camera_enabled")
+                        isCameraOn = cameraEnabledStr == "true"
+                        runOnUiThread {
+                            buttonToggleCamera.text = if (isCameraOn) getString(R.string.camera_on) else getString(R.string.camera_off)
+                        }
+                        if (isCameraOn) {
+                            startVideoStream()
+                        }
+                    }
+                }
+                response.close()
+            }
+        })
+    }
+
     private fun startVideoStream() {
+        if (isStreaming) return
         isStreaming = true
         val url = "http://$piHost:5000/video_feed"
         val request = Request.Builder()
@@ -221,14 +254,19 @@ class MainActivity : AppCompatActivity() {
         client.newCall(request).enqueue(object : Callback {
             override fun onFailure(call: Call, e: IOException) {
                 Log.e("MainActivity", "Video stream failed", e)
+                isStreaming = false
             }
 
             override fun onResponse(call: Call, response: Response) {
                 if (!response.isSuccessful) {
+                    isStreaming = false
                     response.close()
                     return
                 }
-                val source = response.body?.source() ?: return
+                val source = response.body?.source() ?: run {
+                    isStreaming = false
+                    return
+                }
 
                 // JPEG Magic bytes: Start of Image (SOI) and End of Image (EOI)
                 val soi = ByteString.of(0xFF.toByte(), 0xD8.toByte())
@@ -263,6 +301,7 @@ class MainActivity : AppCompatActivity() {
                 } catch (e: Exception) {
                     Log.e("MainActivity", "Video parsing failed", e)
                 } finally {
+                    isStreaming = false
                     response.close()
                 }
             }
