@@ -25,6 +25,21 @@ Important files
 - `android_app/app/src/main/` — app source and resources
 - `android_app/build.gradle.kts` and `android_app/app/build.gradle.kts` — build config
 
+Example code
+```kotlin
+val client = OkHttpClient()
+val request = Request.Builder()
+    .url("http://$piHost:5000/status")
+    .addHeader("X-API-KEY", apiKey)
+    .build()
+
+client.newCall(request).execute().use { response ->
+    if (response.code == 200) {
+        println(response.body?.string())
+    }
+}
+```
+
 Agent hints
 - Avoid editing global Gradle or SDK configs; restrict changes to module-level build files and ask before major changes.
 - Link to [android_app/README.md](android_app/README.md) for feature overview.

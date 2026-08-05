@@ -27,6 +27,25 @@ Common issues
 - Missing PyQt5 or Pillow: ensure `requirements.txt` installed in same Python interpreter used to run GUI.
 - MJPEG parsing errors: check camera is enabled on the Pi and `video_feed` is reachable.
 
+Example code
+```python
+from ui_dashboard.api_client import SecurityAppClient
+
+client = SecurityAppClient(
+    server_url="http://192.168.1.100:5000",
+    api_key="your-api-key",
+    timeout=5.0,
+)
+
+status = client.get_status()
+print(status["temperature_c"], status["humidity"], status["motion_detected"])
+
+# stream video in the same style used in the dashboard
+for chunk in client.get_video_stream():
+    # pass frames to the MJPEG widget
+    print(type(chunk).__name__)
+```
+
 Agent hints
 - Prefer changing UI behavior in small, testable increments.
 - Avoid bundling large test data; use live endpoints or small mocks.

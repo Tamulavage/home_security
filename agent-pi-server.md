@@ -32,6 +32,29 @@ Common troubleshooting
 - Camera issues: verify camera is enabled and picamera2 is installed.
 - API auth errors: check `PI_SERVER_API_KEY` and header name `X-API-KEY`.
 
+Example code
+```python
+from flask import abort, jsonify, request
+from config import Config
+
+
+def _require_api_key():
+    api_key = request.headers.get("X-API-KEY") or request.args.get("api_key")
+    if api_key != Config.API_KEY:
+        abort(401, description="Invalid API key")
+
+
+@app.route("/status", methods=["GET"])
+@authenticated
+def status():
+    return jsonify({
+        "temperature_c": sensor_reader.temperature_c,
+        "humidity": sensor_reader.humidity,
+        "motion_detected": sensor_reader.motion_detected,
+        "camera_enabled": camera_enabled,
+    })
+```
+
 Agent hints
 - Preserve README content: link to [pi_server/README.md](pi_server/README.md) rather than copying large sections.
 - Do not attempt to modify hardware-specific defaults without asking.
