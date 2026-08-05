@@ -18,7 +18,7 @@ Configuration and notes
 - local.properties may contain SDK path — do not check in sensitive local settings.
 
 Quick smoke tests
-- Build APK: `.\uild\outputs\apk\debug\app-debug.apk`
+- Build APK: `.\build\outputs\apk\debug\app-debug.apk`
 - Verify network calls from device/emulator to Pi server and ensure API key is accepted.
 
 Important files
