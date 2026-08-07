@@ -3,9 +3,9 @@
 Short guidance for AI coding agents working in this repository.
 
 What this repo contains
-- `pi_server/` — Flask-based Raspberry Pi server (see pi_server/README.md).
-- `ui_dashboard/` — PyQt5 desktop dashboard (see ui_dashboard/README.md).
-- `android_app/` — Native Android app; builds with Gradle wrapper (see android_app/README.md).
+- `pi_server/` — Flask-based Raspberry Pi server (see ../pi_server/README.md).
+- `ui_dashboard/` — PyQt5 desktop dashboard (see ../ui_dashboard/README.md).
+- `android_app/` — Native Android app; builds with Gradle wrapper (see ../android_app/README.md).
 
 Primary goals for agents
 - Discover where to run and test code: check the component READMEs first.
@@ -36,6 +36,12 @@ Conventions & secrets
 - Python components use `requirements.txt`; prefer virtualenvs for isolation.
 - Android uses the Gradle wrapper — do not assume system Gradle availability.
 
+Key files & components
+- `pi_server/app.py` — Flask entrypoint and API endpoints. See [pi_server/README.md](../pi_server/README.md).
+- `pi_server/config.py` — environment-driven configuration and API key usage.
+- `ui_dashboard/main.py` and `ui_dashboard/api_client.py` — desktop app entry and REST client. See [ui_dashboard/README.md](../ui_dashboard/README.md).
+- `android_app/` — Android app; uses `X-API-KEY` for auth. See [android_app/README.md](../android_app/README.md).
+
 Testing & CI
 - There is no centralized CI configuration in the repo. Run component-specific checks locally.
 
@@ -44,6 +50,3 @@ Where to look first
 - Pi server: [pi_server/README.md](../pi_server/README.md)
 - UI Dashboard: [ui_dashboard/README.md](../ui_dashboard/README.md)
 - Android: [android_app/README.md](../android_app/README.md)
-
-If you need a different format
-- I can export these instructions to the repo root or expand per-component agent skill files (e.g., `agent-pi-server.md`).
