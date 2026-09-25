@@ -98,6 +98,10 @@ class MainActivity : AppCompatActivity() {
         buttonToggleCamera.setOnClickListener {
             toggleCamera()
         }
+
+        imageVideo.setOnClickListener {
+            imageVideo.rotation = (imageVideo.rotation + 90f) % 360f
+        }
     }
 
     private fun disconnect() {
@@ -109,6 +113,7 @@ class MainActivity : AppCompatActivity() {
             buttonDisconnect.visibility = View.GONE
             buttonToggleCamera.visibility = View.GONE
             imageVideo.setImageBitmap(null)
+            imageVideo.rotation = 0f
             textTemperature.text = getString(R.string.temperature_format, "--", "--")
             textMotion.text = getString(R.string.motion_format, "unknown")
         }
