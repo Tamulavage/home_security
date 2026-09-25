@@ -30,6 +30,3 @@ Where to look first
 - Android overview: [android_app/README.md](android_app/README.md)
 - Pi server: [pi_server/README.md](pi_server/README.md)
 - UI Dashboard: [ui_dashboard/README.md](ui_dashboard/README.md)
-
-If you want more automation
-- I can add a `.github/copilot-instructions.md` or expand this file with task-specific agent skills (e.g., `agent-pi-server.md`) — tell me which area to focus on.
