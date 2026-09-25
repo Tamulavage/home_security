@@ -22,6 +22,13 @@ Quick smoke tests
 - Status: `curl -H "X-API-KEY: $PI_SERVER_API_KEY" http://<pi>:5000/status`
 - Video feed (MJPEG): open `http://<pi>:5000/video_feed` in a browser
 
+Adding a new endpoint
+- For any new Pi server endpoint, require the API key by using `@authenticated` or calling `_require_api_key()` directly.
+- Treat the `X-API-KEY` header and `api_key` query parameter as the supported auth methods; do not make new endpoints public unless that is explicitly intended.
+- Register the route in `pi_server/app.py` so Flask serves it when the server starts.
+- Keep the behavior minimal and consistent with existing handlers by returning `jsonify(...)` or `abort(...)`.
+- After adding the route, smoke-test it both with and without the API key to confirm the auth behavior and server response.
+
 Important files to inspect
 - `pi_server/app.py` — API endpoints and entrypoint
 - `pi_server/config.py` — environment-driven configuration
@@ -31,6 +38,29 @@ Common troubleshooting
 - Missing GPIO libs: ensure Raspberry Pi has required packages and permissions.
 - Camera issues: verify camera is enabled and picamera2 is installed.
 - API auth errors: check `PI_SERVER_API_KEY` and header name `X-API-KEY`.
+
+Example code
+```python
+from flask import abort, jsonify, request
+from config import Config
+
+
+def _require_api_key():
+    api_key = request.headers.get("X-API-KEY") or request.args.get("api_key")
+    if api_key != Config.API_KEY:
+        abort(401, description="Invalid API key")
+
+
+@app.route("/status", methods=["GET"])
+@authenticated
+def status():
+    return jsonify({
+        "temperature_c": sensor_reader.temperature_c,
+        "humidity": sensor_reader.humidity,
+        "motion_detected": sensor_reader.motion_detected,
+        "camera_enabled": camera_enabled,
+    })
+```
 
 Agent hints
 - Preserve README content: link to [pi_server/README.md](pi_server/README.md) rather than copying large sections.
