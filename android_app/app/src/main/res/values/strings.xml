@@ -6,4 +6,5 @@
     <string name="camera_on">Turn Camera OFF</string>
     <string name="camera_off">Turn Camera ON</string>
     <string name="disconnect">Disconnect</string>
+    <string name="camera_feed">Camera Feed</string>
 </resources>
