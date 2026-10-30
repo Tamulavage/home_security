@@ -9,6 +9,7 @@ import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.edit
@@ -53,6 +54,7 @@ class MainActivity : AppCompatActivity() {
     private var isStreaming: Boolean = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        installSplashScreen()
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
@@ -112,8 +114,11 @@ class MainActivity : AppCompatActivity() {
             buttonConnect.visibility = View.VISIBLE
             buttonDisconnect.visibility = View.GONE
             buttonToggleCamera.visibility = View.GONE
+            textTemperature.visibility = View.GONE
+            textMotion.visibility = View.GONE
             imageVideo.setImageBitmap(null)
             imageVideo.rotation = 0f
+            imageVideo.visibility = View.GONE
             textTemperature.text = getString(R.string.temperature_format, "--", "--")
             textMotion.text = getString(R.string.motion_format, "unknown")
         }
@@ -173,12 +178,15 @@ class MainActivity : AppCompatActivity() {
                         val humidity = JsonUtils.getValueFromJson(body, "humidity")
                         runOnUiThread {
                             textTemperature.text = getString(R.string.temperature_format, temperature, humidity)
+                            textTemperature.visibility = View.VISIBLE
+                            textMotion.visibility = View.VISIBLE
                             // Hide connection UI on success
                             inputLayoutPiHost.visibility = View.GONE
                             inputLayoutApiKey.visibility = View.GONE
                             buttonConnect.visibility = View.GONE
                             buttonDisconnect.visibility = View.VISIBLE
                             buttonToggleCamera.visibility = View.VISIBLE
+                            imageVideo.visibility = View.VISIBLE
                         }
                     }
                 } else {
@@ -207,8 +215,13 @@ class MainActivity : AppCompatActivity() {
                 if (response.isSuccessful) {
                     response.body?.string()?.let { body ->
                         val motionDetect = JsonUtils.getValueFromJson(body, "motion_detected")
+                        val motionDisplay = when (motionDetect?.lowercase()) {
+                            "true" -> getString(R.string.motion_active)
+                            "false" -> getString(R.string.motion_inactive)
+                            else -> motionDetect ?: "unknown"
+                        }
                         runOnUiThread {
-                            textMotion.text = getString(R.string.motion_format, motionDetect)
+                            textMotion.text = getString(R.string.motion_format, motionDisplay)
                         }
                     }
                 }
