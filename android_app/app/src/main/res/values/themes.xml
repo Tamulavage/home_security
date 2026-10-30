@@ -7,7 +7,13 @@
         <item name="colorOnSecondary">#FFFFFF</item>
         <item name="colorSurface">#FFFBFE</item>
         <item name="colorOnSurface">#1C1B1F</item>
-        <item name="android:statusBarColor">#6750A4</item>
-        <item name="android:navigationBarColor">#FFFBFE</item>
+        <item name="android:statusBarColor">#141622</item>
+        <item name="android:navigationBarColor">#141622</item>
+    </style>
+
+    <style name="Theme.SecurityApp.Starting" parent="Theme.SplashScreen">
+        <item name="windowSplashScreenBackground">#141622</item>
+        <item name="windowSplashScreenAnimatedIcon">@drawable/ic_thief_splash</item>
+        <item name="postSplashScreenTheme">@style/Theme.SecurityApp</item>
     </style>
 </resources>

@@ -1,0 +1,150 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+
+    <!-- Circular Jail Portal Frame (Round Icon Specialization) -->
+    <path
+        android:fillColor="#1A1C28"
+        android:pathData="M54,54 m-32,0 a32,32 0 1,0 64,0 a32,32 0 1,0 -64,0" />
+
+    <!-- Prisoner Shirt (Behind Bars) -->
+    <path
+        android:fillColor="#1E202A"
+        android:pathData="M28,81 C28,67 38,61 54,61 C70,61 80,67 80,81 Z" />
+
+    <!-- White Prisoner Stripes -->
+    <path
+        android:fillColor="#E2E8F0"
+        android:pathData="M33,67 H75 V70 H33 Z" />
+    <path
+        android:fillColor="#E2E8F0"
+        android:pathData="M30,75 H78 V78 H30 Z" />
+
+    <!-- Neck -->
+    <path
+        android:fillColor="#FFE0B2"
+        android:pathData="M47,56 H61 V62 H47 Z" />
+
+    <!-- Head / Face -->
+    <path
+        android:fillColor="#FFE0B2"
+        android:pathData="M40,36 C40,30 46,26 54,26 C62,26 68,30 68,36 L68,49 C68,55 62,60 54,60 C46,60 40,55 40,49 Z" />
+
+    <!-- Ears -->
+    <path
+        android:fillColor="#F5CBA7"
+        android:pathData="M38,42 C36,42 36,47 39,48 Z" />
+    <path
+        android:fillColor="#F5CBA7"
+        android:pathData="M69,42 C72,42 72,47 69,48 Z" />
+
+    <!-- Beanie / Thief Cap -->
+    <path
+        android:fillColor="#222531"
+        android:pathData="M38,36 C38,25 45,19 54,19 C63,19 70,25 70,36 Z" />
+    <path
+        android:fillColor="#36394A"
+        android:pathData="M36,33 C36,31 38,30 41,30 H67 C70,30 72,31 72,33 V37 C72,39 70,40 67,40 H41 C38,40 36,39 36,37 Z" />
+
+    <!-- Bandit Domino Mask -->
+    <path
+        android:fillColor="#111318"
+        android:pathData="M36,41 C40,40 50,42 54,43 C58,42 68,40 72,41 C74,44 72,51 66,51 C60,51 57,46 54,46 C51,46 48,51 42,51 C36,51 34,44 36,41 Z" />
+
+    <!-- Mask Eye Cutouts -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M42,45 C42,42 47,42 48,45 C48,48 43,48 42,45 Z" />
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M60,45 C60,42 65,42 66,45 C66,48 61,48 60,45 Z" />
+
+    <!-- Pupils -->
+    <path
+        android:fillColor="#111318"
+        android:pathData="M44.5,44.5 A1.5,1.5 0 1,0 47.5,44.5 A1.5,1.5 0 1,0 44.5,44.5 Z" />
+    <path
+        android:fillColor="#111318"
+        android:pathData="M62.5,44.5 A1.5,1.5 0 1,0 65.5,44.5 A1.5,1.5 0 1,0 62.5,44.5 Z" />
+
+    <!-- Worried Frown Mouth -->
+    <path
+        android:fillColor="#00000000"
+        android:pathData="M48,56 C51,53 57,53 60,56"
+        android:strokeWidth="1.8"
+        android:strokeColor="#8D5B4C"
+        android:strokeLineCap="round" />
+
+    <!-- Hands gripping Jail Bars -->
+    <path
+        android:fillColor="#FFE0B2"
+        android:pathData="M36.5,63 C36.5,60 42.5,60 42.5,63 V68 C42.5,70 36.5,70 36.5,68 Z" />
+    <path
+        android:fillColor="#FFE0B2"
+        android:pathData="M65.5,63 C65.5,60 71.5,60 71.5,63 V68 C71.5,70 65.5,70 65.5,68 Z" />
+
+    <!-- Vertical Steel Jail Cell Bars -->
+    <path
+        android:fillColor="#9AA2B5"
+        android:pathData="M23,22 H27 V86 H23 Z" />
+    <path
+        android:fillColor="#D0D7E5"
+        android:pathData="M23,22 H24.5 V86 H23 Z" />
+
+    <path
+        android:fillColor="#9AA2B5"
+        android:pathData="M37.5,22 H41.5 V86 H37.5 Z" />
+    <path
+        android:fillColor="#D0D7E5"
+        android:pathData="M37.5,22 H39 V86 H37.5 Z" />
+
+    <path
+        android:fillColor="#9AA2B5"
+        android:pathData="M52,22 H56 V86 H52 Z" />
+    <path
+        android:fillColor="#D0D7E5"
+        android:pathData="M52,22 H53.5 V86 H52 Z" />
+
+    <path
+        android:fillColor="#9AA2B5"
+        android:pathData="M66.5,22 H70.5 V86 H66.5 Z" />
+    <path
+        android:fillColor="#D0D7E5"
+        android:pathData="M66.5,22 H68 V86 H66.5 Z" />
+
+    <path
+        android:fillColor="#9AA2B5"
+        android:pathData="M81,22 H85 V86 H81 Z" />
+    <path
+        android:fillColor="#D0D7E5"
+        android:pathData="M81,22 H82.5 V86 H81 Z" />
+
+    <!-- Metallic Circular Ring Frame around Jail Window -->
+    <path
+        android:fillColor="#00000000"
+        android:pathData="M54,54 m-32,0 a32,32 0 1,0 64,0 a32,32 0 1,0 -64,0"
+        android:strokeWidth="3"
+        android:strokeColor="#8A92A6" />
+    <path
+        android:fillColor="#00000000"
+        android:pathData="M54,54 m-30.5,0 a30.5,30.5 0 1,0 61,0 a30.5,30.5 0 1,0 -61,0"
+        android:strokeWidth="1"
+        android:strokeColor="#C0C8D8" />
+
+    <!-- Padlock on Jail Bar -->
+    <path
+        android:fillColor="#00000000"
+        android:pathData="M51,75 V71 C51,68.5 57,68.5 57,71 V75"
+        android:strokeWidth="2"
+        android:strokeColor="#C0C8D8" />
+    <path
+        android:fillColor="#E5A93C"
+        android:pathData="M49,74 H59 V83 H49 Z" />
+    <path
+        android:fillColor="#3A2800"
+        android:pathData="M53.5,77.5 A1,1 0 1,0 55.5,77.5 L54.8,80.5 H53.2 Z" />
+
+</vector>
