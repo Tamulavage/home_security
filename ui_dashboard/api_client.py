@@ -260,6 +260,45 @@ class SecurityAppClient:
             
         except requests.RequestException as e:
             raise ConnectionError(f"Failed to stop camera: {e}")
+
+    def disable_recording(
+        self,
+        duration_seconds: Optional[float] = None,
+        during_current_motion: bool = False,
+    ) -> Dict[str, Any]:
+        """Temporarily disable motion-triggered recordings."""
+        if during_current_motion:
+            if duration_seconds is not None:
+                raise ValueError(
+                    "Provide duration_seconds or during_current_motion, not both"
+                )
+            payload = {"during_current_motion": True}
+        elif duration_seconds is not None and duration_seconds > 0:
+            payload = {"duration_seconds": duration_seconds}
+        else:
+            raise ValueError("A positive duration or current-motion option is required")
+
+        try:
+            response = self.session.post(
+                f"{self.server_url}/recording/disable",
+                headers=self._get_headers(),
+                json=payload,
+                timeout=self.timeout,
+            )
+
+            if response.status_code == 401:
+                raise AuthenticationError("Invalid API key")
+            elif response.status_code == 409:
+                raise ConnectionError("There is no active motion to suppress")
+            elif response.status_code != 200:
+                raise ConnectionError(
+                    f"Server returned status {response.status_code}"
+                )
+
+            return response.json()
+
+        except requests.RequestException as e:
+            raise ConnectionError(f"Failed to disable recording: {e}")
     
     @property
     def camera_enabled(self) -> bool:

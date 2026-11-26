@@ -1,3 +1,4 @@
+import logging
 import time
 import threading
 import adafruit_dht
@@ -5,6 +6,8 @@ import RPi.GPIO as GPIO
     
 import board
 from config import Config
+
+logger = logging.getLogger(__name__)
 
 # TODO: change D5 to pull from config 
 dht_device = adafruit_dht.DHT11(board.D5, use_pulseio=False)
@@ -29,7 +32,7 @@ class SensorReader:
         if not dht_device:
             return None, None, None
         
-        print("dht read")
+        logger.debug("Reading DHT sensor")
         try:
             temperature = dht_device.temperature
             humidity = dht_device.humidity
@@ -40,7 +43,7 @@ class SensorReader:
             time.sleep(600)
         except RuntimeError as error:
             # Errors happen fairly often, DHT's are hard to read, just keep going
-            print(error.args[0])
+            logger.warning("DHT read failed: %s", error)
         except Exception as error:
             dht_device.exit()
             raise error
@@ -63,12 +66,12 @@ class SensorReader:
             if state == GPIO.HIGH:
                 self.motion_detected = True
                 self.last_motion_at = time.time()
-                print("Active Motion")
+                logger.info("Active motion detected")
             else:
                 if self.last_motion_at and (time.time() - self.last_motion_at) > Config.MOTION_RESET_SECONDS:
                     self.motion_detected = False
                     
-                    print("No Motion")
+                    logger.info("Motion cleared")
             time.sleep(10)
 
     def start(self):
@@ -92,7 +95,7 @@ class SensorReader:
             dht_device.exit()
         if GPIO:
             GPIO.cleanup()
-        print("sensors exited")
+        logger.info("Sensors stopped")
 
     def get_status(self):
         return {

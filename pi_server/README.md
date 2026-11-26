@@ -41,10 +41,44 @@ This Flask server runs on a Raspberry Pi Zero 2 and exposes secure endpoints for
 - `GET /temperature` - current temperature and humidity
 - `GET /motion` - current motion state
 - `GET /video_feed` - MJPEG camera stream
+- `POST /recording/disable` - temporarily suppress motion-triggered recordings
 
 ### Authentication
 
 All endpoints require either the `X-API-KEY` header or `api_key` query parameter matching `PI_SERVER_API_KEY`.
+
+### Motion recordings
+
+Each motion event creates a new `.h264` file in `pi_server/recordings/`. Set
+`RECORDINGS_DIR` to change the output directory. Recordings stop when motion
+clears. The MJPEG feed continues while recording: Picamera2 encodes the camera
+stream from a half-resolution secondary stream, while H.264 recording uses the
+full-resolution main stream. The live preview encodes every other camera frame
+to reduce load on the Pi.
+
+To disable recording triggers for a duration, send a positive `duration_seconds`:
+
+```json
+{"duration_seconds": 300}
+```
+
+To stop and suppress the recording for the currently active motion, send:
+
+```json
+{"during_current_motion": true}
+```
+
+Both requests must be authenticated. The current-motion option returns `409`
+when there is no active motion. A timed disable applies to new motion events;
+if it expires during an ongoing motion event, recording resumes on the next
+motion event.
+
+The `GET /status` response reports `recording_in_progress` (also available as
+`recording_active`), `recording_paused`,
+`recording_paused_until_motion_clears`, and
+`recording_disabled_remaining_seconds`. The current-motion pause remains active
+while motion is detected and automatically clears only after the motion status
+changes from detected to clear.
 
 ## Notes
 

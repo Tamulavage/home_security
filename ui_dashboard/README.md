@@ -73,16 +73,17 @@ python main.py
 ### Dashboard Interface
 
 - **Video Display**: Shows live MJPEG stream from the Pi camera
-- **Motion Indicator**: 
+- **Motion Indicator**:
   - Green: No motion detected
   - Red: Motion detected
   - Gray: Disconnected
-- **Camera Control Button**: 
+- **Camera Control Button**:
   - Click "Start Camera" to enable camera streaming
   - Click "Stop Camera" to disable camera
 - **Status Panel**: Shows temperature, humidity, and connection status
 - **Settings Button**: Reconfigure server connection
 - **Refresh Button**: Force refresh of all status data
+- **Pause Recording Button**: Shows "Pause Recording" while a recording is active; otherwise it is green and shows "Not actively recording". While active, pause motion-triggered recordings for a chosen duration or the current motion period.
 
 ## Configuration
 
@@ -142,7 +143,11 @@ Configuration is stored in:
 - `GET /video_feed` → MJPEG video stream
 - `POST /camera/start` → Enable camera
 - `POST /camera/stop` → Disable camera
+- `POST /recording/disable` → Temporarily suppress motion-triggered recordings
 - `GET /health` → Connection health check
+
+The recording pause action sends either `{"duration_seconds": <positive seconds>}`
+or `{"during_current_motion": true}` to `/recording/disable`.
 
 ## Troubleshooting
 
