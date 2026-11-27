@@ -15,6 +15,7 @@ class Config:
     CAMERA_FPS = int(os.getenv("CAMERA_FPS", "24"))
     SENSOR_READ_INTERVAL_SECONDS = float(os.getenv("SENSOR_READ_INTERVAL_SECONDS", "5"))
     MOTION_RESET_SECONDS = float(os.getenv("MOTION_RESET_SECONDS", "10"))
+    RECORDINGS_DIR = Path(os.getenv("RECORDINGS_DIR", str(BASE_DIR / "recordings")))
     ALLOWED_ORIGINS = os.getenv("ALLOWED_ORIGINS", "*")
 
     @classmethod

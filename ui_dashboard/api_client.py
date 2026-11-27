@@ -4,7 +4,7 @@ Handles authentication, error handling, and data parsing.
 """
 
 import time
-from typing import Optional, Dict, Any, Iterator
+from typing import Dict, Any, Iterator
 import requests
 from requests.adapters import HTTPAdapter
 from urllib3.util.retry import Retry
@@ -260,6 +260,59 @@ class SecurityAppClient:
             
         except requests.RequestException as e:
             raise ConnectionError(f"Failed to stop camera: {e}")
+
+    def disable_recording(
+        self,
+        during_current_motion: bool = False,
+    ) -> Dict[str, Any]:
+        """Disable motion-triggered recordings until re-enabled."""
+        if during_current_motion:
+            payload = {"during_current_motion": True}
+        else:
+            payload = {}
+
+        try:
+            response = self.session.post(
+                f"{self.server_url}/recording/disable",
+                headers=self._get_headers(),
+                json=payload,
+                timeout=self.timeout,
+            )
+
+            if response.status_code == 401:
+                raise AuthenticationError("Invalid API key")
+            elif response.status_code == 409:
+                raise ConnectionError("There is no active motion to suppress")
+            elif response.status_code != 200:
+                raise ConnectionError(
+                    f"Server returned status {response.status_code}"
+                )
+
+            return response.json()
+
+        except requests.RequestException as e:
+            raise ConnectionError(f"Failed to disable recording: {e}")
+
+    def enable_recording(self) -> Dict[str, Any]:
+        """Re-enable motion-triggered recordings."""
+        try:
+            response = self.session.post(
+                f"{self.server_url}/recording/enable",
+                headers=self._get_headers(),
+                timeout=self.timeout,
+            )
+
+            if response.status_code == 401:
+                raise AuthenticationError("Invalid API key")
+            elif response.status_code != 200:
+                raise ConnectionError(
+                    f"Server returned status {response.status_code}"
+                )
+
+            return response.json()
+
+        except requests.RequestException as e:
+            raise ConnectionError(f"Failed to enable recording: {e}")
     
     @property
     def camera_enabled(self) -> bool:

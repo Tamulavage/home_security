@@ -9,4 +9,9 @@
     <string name="camera_off">Turn Camera ON</string>
     <string name="disconnect">Disconnect</string>
     <string name="camera_feed">Camera Feed</string>
+    <string name="recording_turn_on">Turn on recording</string>
+    <string name="recording_turn_off">Turn off recording</string>
+    <string name="recording_na">N/A</string>
+    <string name="recording_active_status">Recording active</string>
+    <string name="recording_inactive_status">Not recording</string>
 </resources>

@@ -20,7 +20,10 @@ import com.example.securityapp.R
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.textfield.TextInputEditText
 import com.google.android.material.textfield.TextInputLayout
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import okhttp3.*
 import okhttp3.RequestBody.Companion.toRequestBody
@@ -40,7 +43,9 @@ class MainActivity : AppCompatActivity() {
     private lateinit var buttonConnect: MaterialButton
     private lateinit var buttonDisconnect: MaterialButton
     private lateinit var buttonToggleCamera: MaterialButton
+    private lateinit var buttonToggleRecording: MaterialButton
     private lateinit var textTemperature: TextView
+    private lateinit var textRecordingStatus: TextView
     private lateinit var textMotion: TextView
     private lateinit var imageVideo: ImageView
 
@@ -51,7 +56,10 @@ class MainActivity : AppCompatActivity() {
     private var apiKey: String = ""
     private var piHost: String = ""
     private var isCameraOn: Boolean = true
+    private var isRecordingActive: Boolean = false
+    private var isRecordingDisabled: Boolean = false
     private var isStreaming: Boolean = false
+    private var pollJob: Job? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         installSplashScreen()
@@ -65,7 +73,9 @@ class MainActivity : AppCompatActivity() {
         buttonConnect = findViewById(R.id.buttonConnect)
         buttonDisconnect = findViewById(R.id.buttonDisconnect)
         buttonToggleCamera = findViewById(R.id.buttonToggleCamera)
+        buttonToggleRecording = findViewById(R.id.buttonToggleRecording)
         textTemperature = findViewById(R.id.textTemperature)
+        textRecordingStatus = findViewById(R.id.textRecordingStatus)
         textMotion = findViewById(R.id.textMotion)
         imageVideo = findViewById(R.id.imageVideo)
 
@@ -101,12 +111,17 @@ class MainActivity : AppCompatActivity() {
             toggleCamera()
         }
 
+        buttonToggleRecording.setOnClickListener {
+            toggleRecording()
+        }
+
         imageVideo.setOnClickListener {
             imageVideo.rotation = (imageVideo.rotation + 90f) % 360f
         }
     }
 
     private fun disconnect() {
+        stopPolling()
         isStreaming = false
         runOnUiThread {
             inputLayoutPiHost.visibility = View.VISIBLE
@@ -114,13 +129,16 @@ class MainActivity : AppCompatActivity() {
             buttonConnect.visibility = View.VISIBLE
             buttonDisconnect.visibility = View.GONE
             buttonToggleCamera.visibility = View.GONE
+            buttonToggleRecording.visibility = View.GONE
             textTemperature.visibility = View.GONE
+            textRecordingStatus.visibility = View.GONE
             textMotion.visibility = View.GONE
             imageVideo.setImageBitmap(null)
             imageVideo.rotation = 0f
             imageVideo.visibility = View.GONE
             textTemperature.text = getString(R.string.temperature_format, "--", "--")
             textMotion.text = getString(R.string.motion_format, "unknown")
+            textRecordingStatus.text = ""
         }
     }
 
@@ -186,7 +204,9 @@ class MainActivity : AppCompatActivity() {
                             buttonConnect.visibility = View.GONE
                             buttonDisconnect.visibility = View.VISIBLE
                             buttonToggleCamera.visibility = View.VISIBLE
+                            buttonToggleRecording.visibility = View.VISIBLE
                             imageVideo.visibility = View.VISIBLE
+                            startPolling()
                         }
                     }
                 } else {
@@ -240,24 +260,82 @@ class MainActivity : AppCompatActivity() {
         client.newCall(request).enqueue(object : Callback {
             override fun onFailure(call: Call, e: IOException) {
                 Log.e("MainActivity", "Status request failed", e)
+                runOnUiThread {
+                    textRecordingStatus.visibility = View.GONE
+                }
             }
 
             override fun onResponse(call: Call, response: Response) {
                 if (response.isSuccessful) {
                     response.body?.string()?.let { body ->
                         val cameraEnabledStr = JsonUtils.getValueFromJson(body, "camera_enabled")
+                        val recordingActiveStr = JsonUtils.getValueFromJson(body, "recording_active")
+                        val recordingDisabledStr = JsonUtils.getValueFromJson(body, "recording_disabled")
+
                         isCameraOn = cameraEnabledStr == "true"
+                        isRecordingActive = recordingActiveStr == "true"
+                        isRecordingDisabled = recordingDisabledStr == "true"
+
                         runOnUiThread {
                             buttonToggleCamera.text = if (isCameraOn) getString(R.string.camera_on) else getString(R.string.camera_off)
+                            buttonToggleRecording.text = if (isRecordingDisabled) getString(R.string.recording_turn_on) else getString(R.string.recording_turn_off)
+                            textRecordingStatus.text = if (isRecordingActive) getString(R.string.recording_active_status) else getString(R.string.recording_inactive_status)
+                            textRecordingStatus.visibility = View.VISIBLE
                         }
                         if (isCameraOn) {
                             startVideoStream()
                         }
                     }
+                } else {
+                    runOnUiThread {
+                        textRecordingStatus.visibility = View.GONE
+                    }
                 }
                 response.close()
             }
         })
+    }
+
+    private fun toggleRecording() {
+        val action = if (isRecordingDisabled) "enable" else "disable"
+        val url = "http://$piHost:5000/recording/$action"
+
+        val request = Request.Builder()
+            .url(url)
+            .post(ByteArray(0).toRequestBody(null))
+            .addHeader("X-API-KEY", apiKey)
+            .build()
+
+        client.newCall(request).enqueue(object : Callback {
+            override fun onFailure(call: Call, e: IOException) {
+                Log.e("MainActivity", "Recording $action request failed", e)
+            }
+
+            override fun onResponse(call: Call, response: Response) {
+                if (response.isSuccessful) {
+                    fetchStatus()
+                }
+                response.close()
+            }
+        })
+    }
+
+    private fun startPolling() {
+        pollJob?.cancel()
+        pollJob = lifecycleScope.launch {
+            while (isActive) {
+                delay(3000)
+                if (piHost.isNotEmpty() && apiKey.isNotEmpty()) {
+                    fetchStatus()
+                    fetchMotion()
+                }
+            }
+        }
+    }
+
+    private fun stopPolling() {
+        pollJob?.cancel()
+        pollJob = null
     }
 
     private fun startVideoStream() {
