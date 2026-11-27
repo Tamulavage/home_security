@@ -41,7 +41,8 @@ This Flask server runs on a Raspberry Pi Zero 2 and exposes secure endpoints for
 - `GET /temperature` - current temperature and humidity
 - `GET /motion` - current motion state
 - `GET /video_feed` - MJPEG camera stream
-- `POST /recording/disable` - temporarily suppress motion-triggered recordings
+- `POST /recording/disable` - disable motion-triggered recordings until re-enabled
+- `POST /recording/enable` - re-enable motion-triggered recordings
 
 ### Authentication
 
@@ -56,11 +57,14 @@ stream from a half-resolution secondary stream, while H.264 recording uses the
 full-resolution main stream. The live preview encodes every other camera frame
 to reduce load on the Pi.
 
-To disable recording triggers for a duration, send a positive `duration_seconds`:
+To disable recording triggers until re-enabled, send an empty JSON payload:
 
 ```json
-{"duration_seconds": 300}
+{}
 ```
+
+An authenticated request with no JSON body also disables recording. Use
+`POST /recording/enable` to re-enable it.
 
 To stop and suppress the recording for the currently active motion, send:
 
@@ -68,14 +72,13 @@ To stop and suppress the recording for the currently active motion, send:
 {"during_current_motion": true}
 ```
 
-Both requests must be authenticated. The current-motion option returns `409`
-when there is no active motion. A timed disable applies to new motion events;
-if it expires during an ongoing motion event, recording resumes on the next
-motion event.
+Both disable options must be authenticated. The current-motion option returns `409`
+when there is no active motion. The permanent disable remains active until
+`POST /recording/enable`.
 
 The `GET /status` response reports `recording_in_progress` (also available as
 `recording_active`), `recording_paused`,
-`recording_paused_until_motion_clears`, and
+`recording_disabled`, `recording_paused_until_motion_clears`, and
 `recording_disabled_remaining_seconds`. The current-motion pause remains active
 while motion is detected and automatically clears only after the motion status
 changes from detected to clear.

@@ -1,6 +1,5 @@
 import json
 import logging
-import math
 import os
 import threading
 import time
@@ -26,6 +25,7 @@ camera_lock = threading.Lock()
 recording_lock = threading.Lock()
 recording_operation_lock = threading.Lock()
 recording_disabled_until = 0.0
+recording_disabled = False
 recording_suppressed_motion = False
 recording_active = False
 DEVICE_STORE_PATH = os.path.join(os.path.dirname(__file__), "devices.json")
@@ -79,6 +79,7 @@ def _start_motion_recording():
         with recording_lock:
             if (
                 recording_active
+                or recording_disabled
                 or recording_suppressed_motion
                 or time.monotonic() < recording_disabled_until
             ):
@@ -129,13 +130,16 @@ def status():
         )
         paused_until_motion_clears = recording_suppressed_motion
         recording_paused = (
-            paused_until_motion_clears or disabled_remaining > 0
+            recording_disabled
+            or paused_until_motion_clears
+            or disabled_remaining > 0
         )
         is_recording = recording_active
 
     return jsonify({
         **sensor_reader.get_status(),
         "camera_enabled": camera_enabled,
+        "recording_disabled": recording_disabled,
         "recording_active": is_recording,
         "recording_in_progress": is_recording,
         "recording_paused": recording_paused,
@@ -196,48 +200,50 @@ def camera_stop():
 @app.route("/recording/disable", methods=["POST"])
 @authenticated
 def recording_disable():
-    global recording_disabled_until, recording_suppressed_motion
+    global recording_disabled, recording_disabled_until, recording_suppressed_motion
 
     payload = request.get_json(silent=True)
+    if payload is None:
+        payload = {}
     if not isinstance(payload, dict):
         abort(400, description="Expected a JSON payload")
 
-    duration = payload.get("duration_seconds")
     during_current_motion = payload.get("during_current_motion")
-    if duration is not None and during_current_motion is not None:
-        abort(400, description="Provide duration_seconds or during_current_motion, not both")
-
-    if duration is not None:
-        if isinstance(duration, bool):
-            abort(400, description="duration_seconds must be a positive number")
-        try:
-            duration = float(duration)
-        except (TypeError, ValueError):
-            abort(400, description="duration_seconds must be a positive number")
-        if not math.isfinite(duration) or duration <= 0:
-            abort(400, description="duration_seconds must be a positive number")
+    if during_current_motion is True:
+        if not sensor_reader.motion_detected:
+            abort(409, description="There is no active motion to suppress")
 
         with recording_lock:
-            recording_disabled_until = max(
-                recording_disabled_until, time.monotonic() + duration
-            )
+            recording_suppressed_motion = True
         _stop_motion_recording()
         return jsonify({
             "trigger_disabled": True,
-            "disabled_for_seconds": duration,
+            "during_current_motion": True,
         })
 
-    if during_current_motion is not True:
-        abort(400, description="Provide duration_seconds or set during_current_motion to true")
-    if not sensor_reader.motion_detected:
-        abort(409, description="There is no active motion to suppress")
-
     with recording_lock:
-        recording_suppressed_motion = True
+        recording_disabled = True
+        recording_disabled_until = 0.0
+        recording_suppressed_motion = False
     _stop_motion_recording()
     return jsonify({
         "trigger_disabled": True,
-        "during_current_motion": True,
+        "disabled": True,
+    })
+
+
+@app.route("/recording/enable", methods=["POST"])
+@authenticated
+def recording_enable():
+    global recording_disabled, recording_disabled_until, recording_suppressed_motion
+
+    with recording_lock:
+        recording_disabled = False
+        recording_disabled_until = 0.0
+        recording_suppressed_motion = False
+    return jsonify({
+        "trigger_disabled": False,
+        "disabled": False,
     })
 
 
@@ -309,7 +315,8 @@ def _motion_recording_monitor():
                 should_stop_recording = True
             elif not previous_motion:
                 if (
-                    time.monotonic() >= recording_disabled_until
+                    not recording_disabled
+                    and time.monotonic() >= recording_disabled_until
                     and not recording_suppressed_motion
                 ):
                     should_start_recording = True

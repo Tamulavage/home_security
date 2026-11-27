@@ -77,6 +77,20 @@
         app:layout_constraintTop_toBottomOf="@id/buttonConnect" />
 
     <com.google.android.material.button.MaterialButton
+        android:id="@+id/buttonToggleRecording"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="8dp"
+        android:layout_marginEnd="16dp"
+        android:text="@string/recording_na"
+        android:visibility="gone"
+        app:cornerRadius="12dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/buttonToggleCamera" />
+
+    <com.google.android.material.button.MaterialButton
         android:id="@+id/buttonDisconnect"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
@@ -88,7 +102,7 @@
         app:cornerRadius="12dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/buttonToggleCamera" />
+        app:layout_constraintTop_toBottomOf="@id/buttonToggleRecording" />
 
     <TextView
         android:id="@+id/textTemperature"
@@ -116,6 +130,20 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/textTemperature" />
 
+    <TextView
+        android:id="@+id/textRecordingStatus"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="8dp"
+        android:layout_marginEnd="16dp"
+        android:text="@string/recording_active_status"
+        android:textSize="18sp"
+        android:visibility="gone"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/textMotion" />
+
     <ImageView
         android:id="@+id/imageVideo"
         android:layout_width="0dp"
@@ -127,6 +155,6 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/textMotion" />
+        app:layout_constraintTop_toBottomOf="@id/textRecordingStatus" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

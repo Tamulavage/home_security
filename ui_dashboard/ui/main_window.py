@@ -9,7 +9,7 @@ from datetime import datetime
 from typing import Optional
 from PyQt5.QtWidgets import (
     QMainWindow, QWidget, QVBoxLayout, QHBoxLayout, QPushButton,
-    QDialog, QLabel, QGroupBox, QMessageBox, QStatusBar, QInputDialog
+    QDialog, QLabel, QGroupBox, QMessageBox, QStatusBar
 )
 from PyQt5.QtCore import Qt, QTimer, pyqtSignal, QObject
 from PyQt5.QtGui import QFont
@@ -93,20 +93,28 @@ class APIWorker(QObject):
 
     def disable_recording(
         self,
-        duration_seconds: Optional[float] = None,
         during_current_motion: bool = False,
     ):
         """Disable motion-triggered recordings without blocking the UI."""
         try:
             self.client.disable_recording(
-                duration_seconds=duration_seconds,
                 during_current_motion=during_current_motion,
             )
             if during_current_motion:
                 message = "Recording suppressed for the current motion period"
             else:
-                message = f"Recording paused for {duration_seconds:g} seconds"
+                message = "Recording disabled until re-enabled"
             self.recording_disabled.emit(message)
+        except Exception as e:
+            self.error_occurred.emit(f"Recording control error: {e}")
+        finally:
+            self.recording_control_finished.emit()
+
+    def enable_recording(self):
+        """Re-enable motion-triggered recordings without blocking the UI."""
+        try:
+            self.client.enable_recording()
+            self.recording_disabled.emit("Recording re-enabled")
         except Exception as e:
             self.error_occurred.emit(f"Recording control error: {e}")
         finally:
@@ -132,6 +140,7 @@ class MainWindow(QMainWindow):
         self.worker: Optional[APIWorker] = None
         self.status_thread: Optional[threading.Thread] = None
         self.video_thread: Optional[threading.Thread] = None
+        self.recording_disabled = False
         
         # UI components
         self._init_ui()
@@ -366,52 +375,49 @@ class MainWindow(QMainWindow):
         thread.start()
 
     def _on_pause_recording_clicked(self):
-        """Choose how long to pause motion-triggered recordings."""
+        """Disable or re-enable motion-triggered recordings."""
         if not self.client or not self.worker:
             QMessageBox.warning(self, "Not Connected", "Not connected to server")
             return
 
+        if self.recording_disabled:
+            self._start_recording_enable()
+            return
+
         choice = QMessageBox(self)
-        choice.setWindowTitle("Pause Recording")
-        choice.setText("Choose when recording should resume:")
-        duration_button = choice.addButton("Duration", QMessageBox.AcceptRole)
+        choice.setWindowTitle("Disable Recording")
+        choice.setText("Choose a recording disable option:")
+        disable_button = choice.addButton("Disable Until Re-enabled", QMessageBox.AcceptRole)
         motion_button = choice.addButton(
             "Current Motion Period", QMessageBox.AcceptRole
         )
         choice.addButton("Cancel", QMessageBox.RejectRole)
         choice.exec_()
 
-        if choice.clickedButton() == duration_button:
-            duration_seconds, accepted = QInputDialog.getInt(
-                self,
-                "Pause Recording",
-                "Duration in seconds:",
-                300,
-                1,
-                2147483647,
-                60,
-            )
-            if not accepted:
-                return
-            self._start_recording_disable(duration_seconds=duration_seconds)
+        if choice.clickedButton() == disable_button:
+            self._start_recording_disable()
         elif choice.clickedButton() == motion_button:
             self._start_recording_disable(during_current_motion=True)
 
-    def _start_recording_disable(
-        self,
-        duration_seconds: Optional[float] = None,
-        during_current_motion: bool = False,
-    ):
+    def _start_recording_disable(self, during_current_motion: bool = False):
         """Run the recording control request in a background thread."""
         if not self.worker:
             return
         self.pause_recording_button.setEnabled(False)
         thread = threading.Thread(
             target=self.worker.disable_recording,
-            kwargs={
-                "duration_seconds": duration_seconds,
-                "during_current_motion": during_current_motion,
-            },
+            kwargs={"during_current_motion": during_current_motion},
+            daemon=True,
+        )
+        thread.start()
+
+    def _start_recording_enable(self):
+        """Run the recording enable request in a background thread."""
+        if not self.worker:
+            return
+        self.pause_recording_button.setEnabled(False)
+        thread = threading.Thread(
+            target=self.worker.enable_recording,
             daemon=True,
         )
         thread.start()
@@ -425,12 +431,16 @@ class MainWindow(QMainWindow):
         )
         self.camera_button.set_camera_state(status.get("camera_enabled", True))
         recording_active = status.get("recording_active", False)
-        self.pause_recording_button.setText(
-            "Pause Recording" if recording_active else "Not actively recording"
-        )
-        self.pause_recording_button.setObjectName(
-            "dangerButton" if recording_active else "successButton"
-        )
+        self.recording_disabled = status.get("recording_disabled", False)
+        if self.recording_disabled:
+            self.pause_recording_button.setText("Enable Recording")
+            self.pause_recording_button.setObjectName("successButton")
+        elif recording_active:
+            self.pause_recording_button.setText("Disable Recording")
+            self.pause_recording_button.setObjectName("dangerButton")
+        else:
+            self.pause_recording_button.setText("Disable Recording")
+            self.pause_recording_button.setObjectName("successButton")
         self.pause_recording_button.style().unpolish(
             self.pause_recording_button
         )

@@ -83,7 +83,7 @@ python main.py
 - **Status Panel**: Shows temperature, humidity, and connection status
 - **Settings Button**: Reconfigure server connection
 - **Refresh Button**: Force refresh of all status data
-- **Pause Recording Button**: Shows "Pause Recording" while a recording is active; otherwise it is green and shows "Not actively recording". While active, pause motion-triggered recordings for a chosen duration or the current motion period.
+- **Recording Button**: Disable motion-triggered recordings until re-enabled, or suppress the current motion period. When disabled, the button changes to "Enable Recording".
 
 ## Configuration
 
@@ -143,11 +143,13 @@ Configuration is stored in:
 - `GET /video_feed` → MJPEG video stream
 - `POST /camera/start` → Enable camera
 - `POST /camera/stop` → Disable camera
-- `POST /recording/disable` → Temporarily suppress motion-triggered recordings
+- `POST /recording/disable` → Disable motion-triggered recordings until re-enabled
+- `POST /recording/enable` → Re-enable motion-triggered recordings
 - `GET /health` → Connection health check
 
-The recording pause action sends either `{"duration_seconds": <positive seconds>}`
-or `{"during_current_motion": true}` to `/recording/disable`.
+The recording control disables permanently when `{}` is sent to
+`/recording/disable`, or suppresses only the current motion period with
+`{"during_current_motion": true}`. Use `/recording/enable` to re-enable recording.
 
 ## Troubleshooting
 
