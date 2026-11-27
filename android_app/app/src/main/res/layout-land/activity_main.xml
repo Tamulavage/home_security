@@ -84,6 +84,20 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/buttonConnect" />
 
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/buttonDisconnect"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="20dp"
+        android:layout_marginTop="8dp"
+        android:layout_marginEnd="12dp"
+        android:text="@string/disconnect"
+        android:visibility="gone"
+        app:cornerRadius="12dp"
+        app:layout_constraintEnd_toStartOf="@+id/vertical_guideline"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/buttonToggleCamera" />
+
     <TextView
         android:id="@+id/textTemperature"
         android:layout_width="0dp"
@@ -93,9 +107,10 @@
         android:layout_marginEnd="12dp"
         android:text="Temperature: --°F"
         android:textSize="14sp"
+        android:visibility="gone"
         app:layout_constraintEnd_toStartOf="@+id/vertical_guideline"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/buttonToggleCamera" />
+        app:layout_constraintTop_toBottomOf="@id/buttonDisconnect" />
 
     <TextView
         android:id="@+id/textMotion"
@@ -106,31 +121,18 @@
         android:layout_marginEnd="12dp"
         android:text="Motion: unknown"
         android:textSize="14sp"
+        android:visibility="gone"
         app:layout_constraintEnd_toStartOf="@+id/vertical_guideline"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/textTemperature" />
-
-    <com.google.android.material.button.MaterialButton
-        android:id="@+id/buttonDisconnect"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="30dp"
-        android:layout_marginEnd="12dp"
-        android:layout_marginBottom="16dp"
-        android:text="@string/disconnect"
-        android:visibility="gone"
-        app:cornerRadius="12dp"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toStartOf="@+id/vertical_guideline"
-        app:layout_constraintStart_toStartOf="parent" />
 
     <ImageView
         android:id="@+id/imageVideo"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        android:background="@android:color/darker_gray"
-        android:scaleType="fitCenter"
         android:contentDescription="@string/camera_feed"
+        android:scaleType="fitCenter"
+        android:visibility="gone"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="1.0"

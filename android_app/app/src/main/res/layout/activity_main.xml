@@ -76,30 +76,6 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/buttonConnect" />
 
-    <TextView
-        android:id="@+id/textTemperature"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_margin="16dp"
-        android:text="Temperature: --°F"
-        android:textSize="18sp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/buttonToggleCamera" />
-
-    <TextView
-        android:id="@+id/textMotion"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="16dp"
-        android:layout_marginTop="8dp"
-        android:layout_marginEnd="16dp"
-        android:text="Motion: unknown"
-        android:textSize="18sp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/textTemperature" />
-
     <com.google.android.material.button.MaterialButton
         android:id="@+id/buttonDisconnect"
         android:layout_width="0dp"
@@ -112,19 +88,45 @@
         app:cornerRadius="12dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/textMotion" />
+        app:layout_constraintTop_toBottomOf="@id/buttonToggleCamera" />
+
+    <TextView
+        android:id="@+id/textTemperature"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_margin="16dp"
+        android:text="Temperature: --°F"
+        android:textSize="18sp"
+        android:visibility="gone"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/buttonDisconnect" />
+
+    <TextView
+        android:id="@+id/textMotion"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="8dp"
+        android:layout_marginEnd="16dp"
+        android:text="Motion: unknown"
+        android:textSize="18sp"
+        android:visibility="gone"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/textTemperature" />
 
     <ImageView
         android:id="@+id/imageVideo"
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:layout_margin="16dp"
-        android:background="@android:color/darker_gray"
         android:scaleType="fitCenter"
+        android:visibility="gone"
         android:contentDescription="@string/camera_feed"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/buttonDisconnect" />
+        app:layout_constraintTop_toBottomOf="@id/textMotion" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
